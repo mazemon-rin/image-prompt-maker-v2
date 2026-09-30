@@ -1,0 +1,42 @@
+import { sampleManifest } from './sample-manifest.mjs';
+import { createPromptModel, adaptPrompt } from './prompt-builder.mjs';
+import { put, getAll, remove, exportData, importData } from './storage.mjs';
+
+const state = { model: createPromptModel(), step: 0, result: '', history: [] };
+const steps = ['subject', 'style', 'composition', 'lighting', 'adjustment', 'adapter', 'result'];
+const stepLabels = ['イメージ', '絵柄', '構図', '光・雰囲気', '微調整', '出力先', '完成'];
+const $ = (selector) => document.querySelector(selector);
+const app = $('#app');
+
+function render() {
+  const step = steps[state.step];
+  app.innerHTML = `<main class="shell"><header class="topbar"><a class="brand" href="./" aria-label="ホームへ"><span class="brand-mark">P</span><span><strong>Prompt Studio</strong><small>Image Prompt Maker</small></span></a><span class="eyebrow">VER.2 / LOCAL FIRST</span></header><div class="progress" aria-label="作成ステップ">${stepLabels.map((label, index) => `<span class="progress-item ${index === state.step ? 'current' : ''} ${index < state.step ? 'done' : ''}" ${index === state.step ? 'aria-current="step"' : ''}><b>${index + 1}</b>${label}</span>`).join('<i aria-hidden="true">—</i>')}</div><header class="page-heading"><p class="kicker">${state.step === 0 ? 'YOUR IDEA' : `STEP ${state.step + 1} / ${steps.length}`}</p><h1>${step === 'result' ? 'プロンプトが完成しました。' : state.step === 0 ? '想像しているイメージを、<br>かたちにしよう。' : step === 'style' ? 'どんな絵にする？' : step === 'composition' ? 'どこまで見せる？' : step === 'lighting' ? 'どんな空気感にする？' : step === 'adjustment' ? '細かい印象を整える' : 'どこへコピーする？'}</h1><p class="lead">${state.step === 0 ? '好きな要素を選ぶだけで、画像生成AIに伝わるプロンプトを作れます。' : step === 'result' ? '選んだイメージから、すぐに使える文章に整えました。' : '見て選ぶだけで大丈夫。あとから戻って変更できます。'}</p></header><section id="screen" aria-live="polite"></section><nav class="nav"><button class="secondary" id="back" ${state.step === 0 ? 'disabled' : ''}>← 戻る</button><button class="primary" id="next">${state.step === steps.length - 1 ? 'もう一度つくる' : '次へ →'}</button></nav></main>`;
+  const screen = $('#screen');
+  if (step === 'subject') screen.innerHTML = `<div class="subject-card"><label for="subject">まず、作りたいものを教えてください。</label><textarea id="subject" placeholder="例：海辺を歩いている女の子、夕暮れのカフェで本を読む男性">${state.model.subject}</textarea><p class="hint">専門的なプロンプトは必要ありません。</p></div><div class="idea-note"><span>01</span><div><strong>イメージから始める</strong><p>次の画面から、好きな絵柄・構図・光を選びます。</p></div></div>`;
+  if (['style', 'composition', 'lighting'].includes(step)) screen.innerHTML = `<h2>${step === 'style' ? 'どんな絵にする？' : step === 'composition' ? 'どこまで見せる？' : 'どんな空気感にする？'}</h2><div class="cards">${sampleManifest.filter((x) => x.category === step).map((item) => `<button class="card ${state.model[step] === item.id ? 'selected' : ''}" data-id="${item.id}"><img src="${item.image}" alt="${item.alt}"><span>${item.label}</span></button>`).join('')}</div>`;
+  if (step === 'adjustment') screen.innerHTML = `<h2>もう少しだけ調整する？</h2>${['detail', 'color', 'background', 'mood'].map((key) => `<label class="range-label">${key}<input data-adjustment="${key}" type="range" min="0" max="4" value="${state.model.adjustments[key]}"></label>`).join('')}<fieldset><legend>入れたくないもの</legend>${['text','logo','watermark','extra-objects','clutter','distortion'].map((id) => `<label class="chip"><input type="checkbox" data-negative="${id}" ${state.model.negative.includes(id) ? 'checked' : ''}> ${id}</label>`).join('')}</fieldset>`;
+  if (step === 'adapter') screen.innerHTML = `<h2>どこへコピーする？</h2><div class="adapter-list">${[['generic','Generic'],['chatgpt','ChatGPT'],['gemini','Gemini']].map(([id,label]) => `<button class="adapter ${state.model.adapter === id ? 'selected' : ''}" data-adapter="${id}">${label} Adapter</button>`).join('')}</div>`;
+  if (step === 'result') screen.innerHTML = `<div class="result-layout"><div class="result-visual"><div class="result-placeholder">✦<span>あなたの選んだ<br>イメージ</span></div></div><div class="result-copy"><label for="result">生成されたプロンプト</label><textarea id="result" readonly>${state.result}</textarea><button class="copy-cta" id="copy">◎ コピーする</button><div class="result-actions"><button id="save">保存</button><button id="backup">JSONバックアップ</button><input id="restore" type="file" accept="application/json"></div></div></div><div class="selection-summary"><span>絵柄：${state.model.style}</span><span>構図：${state.model.composition}</span><span>光：${state.model.lighting}</span><span>出力：${state.model.adapter}</span></div><div class="history"><h2>最近の履歴</h2>${state.history.map((item) => `<p>${new Date(item.createdAt).toLocaleString()}<br>${item.prompt.slice(0, 100)}<br><button class="favorite" data-favorite="${item.id}">${item.favorite ? 'お気に入り済み' : 'お気に入り'}</button></p>`).join('') || '<p>まだ履歴はありません。</p>'}</div>`;
+  bind();
+}
+
+function bind() {
+  $('#subject')?.addEventListener('input', (e) => { state.model.subject = e.target.value; saveDraft(); });
+  document.querySelectorAll('.card').forEach((card) => card.addEventListener('click', () => { state.model[steps[state.step]] = card.dataset.id; render(); }));
+  document.querySelectorAll('[data-adjustment]').forEach((input) => input.addEventListener('input', (e) => { state.model.adjustments[e.target.dataset.adjustment] = Number(e.target.value); saveDraft(); }));
+  document.querySelectorAll('[data-negative]').forEach((input) => input.addEventListener('change', (e) => { const id = e.target.dataset.negative; state.model.negative = e.target.checked ? [...new Set([...state.model.negative, id])] : state.model.negative.filter((x) => x !== id); saveDraft(); }));
+  document.querySelectorAll('[data-adapter]').forEach((button) => button.addEventListener('click', () => { state.model.adapter = button.dataset.adapter; saveDraft(); render(); }));
+  $('#back')?.addEventListener('click', () => { state.step = Math.max(0, state.step - 1); render(); });
+  $('#next')?.addEventListener('click', next);
+  $('#copy')?.addEventListener('click', async () => { await navigator.clipboard?.writeText(state.result); $('#copy').textContent = 'コピーしました'; });
+  $('#save')?.addEventListener('click', saveHistory);
+  document.querySelectorAll('[data-favorite]').forEach((button) => button.addEventListener('click', () => toggleFavorite(button.dataset.favorite)));
+  $('#backup')?.addEventListener('click', async () => { const blob = new Blob([JSON.stringify(await exportData(), null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'image-prompt-maker-backup.json'; a.click(); });
+  $('#restore')?.addEventListener('change', async (e) => { try { const file = e.target.files?.[0]; if (!file) return; const payload = JSON.parse(await file.text()); await importData(payload); state.history = await getAll('history'); render(); alert('復元しました'); } catch (error) { console.error('Backup restore failed', error); alert('JSONを読み込めませんでした。'); } finally { e.target.value = ''; } });
+}
+async function next() { if (state.step === 0 && !state.model.subject.trim()) return alert('作りたいものを入力してください。'); if (state.step < steps.length - 2) { state.step += 1; return render(); } if (state.step === steps.length - 2) { state.result = adaptPrompt(state.model, state.model.adapter); state.step += 1; state.history = await getAll('history'); render(); return; } state.step = 0; state.model = createPromptModel(); render(); }
+async function saveDraft() { await put('drafts', { id: 'current', updatedAt: new Date().toISOString(), model: state.model }); }
+async function saveHistory() { const item = { id: crypto.randomUUID(), createdAt: new Date().toISOString(), prompt: state.result, model: state.model, favorite: false }; await put('history', item); await put('projects', { id: item.id, createdAt: item.createdAt, model: item.model, prompt: item.prompt }); state.history = await getAll('history'); render(); }
+async function toggleFavorite(id) { const item = state.history.find((entry) => entry.id === id); if (!item) return; item.favorite = !item.favorite; await put('history', item); if (item.favorite) await put('favorites', { id, historyId: id, createdAt: new Date().toISOString() }); else await remove('favorites', id); state.history = await getAll('history'); render(); }
+async function restoreDraft() { try { const drafts = await getAll('drafts'); if (drafts[0]?.model) state.model = createPromptModel(drafts[0].model); state.history = await getAll('history'); } catch (error) { console.error('Draft restore failed', error); } render(); }
+restoreDraft();

@@ -1,0 +1,33 @@
+export const sampleManifest = [
+  ["style", "anime", "アニメ風"],
+  ["style", "illustration", "イラスト風"],
+  ["style", "realistic", "リアル風"],
+  ["style", "manga-lineart", "マンガ風（線画）"],
+  ["style", "watercolor", "水彩風"],
+  ["style", "oil-painting", "油彩風"],
+  ["style", "simple-flat", "シンプル・フラット"],
+  ["style", "pop-cute", "ポップ・かわいい"],
+  ["composition", "face-closeup", "顔アップ"],
+  ["composition", "bust-up", "バストアップ"],
+  ["composition", "upper-body", "上半身"],
+  ["composition", "full-body", "全身"],
+  ["composition", "wide-shot", "引き"],
+  ["composition", "side-view", "横から"],
+  ["composition", "low-angle", "ローアングル"],
+  ["composition", "high-angle", "俯瞰（上から）"],
+  ["lighting", "natural-light", "自然光"],
+  ["lighting", "bright", "明るい"],
+  ["lighting", "soft-light", "柔らかい"],
+  ["lighting", "sunset", "夕暮れ"],
+  ["lighting", "night", "夜"],
+  ["lighting", "cinematic", "シネマティック"],
+  ["lighting", "dreamy", "幻想的"],
+  ["lighting", "dramatic", "ドラマチック"]
+].map(([category, id, label], index) => ({
+  category,
+  id,
+  label,
+  image: `images/samples/derived/${category}-${id}.png`,
+  alt: `${label}のサンプル`,
+  order: index + 1
+}));
