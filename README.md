@@ -42,3 +42,11 @@ node --test tests/*.mjs
 Googleログイン、メールOTP、Cloud DB、複数端末同期、Vision API、AI画像の直接生成、課金、Character管理はMVPに含みません。
 
 APIキーは使用せず、ブラウザへ秘密情報を配置しない構成です。
+
+## ライセンス
+
+このアプリは独自ライセンスで提供しています。詳しくは `LICENSE` を確認してください。
+
+## 著作権表記
+
+Copyright (c) 2026 mazemon-rin
