@@ -14,6 +14,9 @@ export const dictionary = {
     'full-body': 'full-body composition', 'wide-shot': 'wide shot composition', 'side-view': 'side view composition',
     'low-angle': 'low-angle composition', 'high-angle': 'high-angle composition'
   },
+  sceneryComposition: {
+    closeup: 'close-up detail-focused composition', near: 'close view subject-dominant composition', standard: 'medium-wide balanced environmental composition', wide: 'wide environmental composition', panorama: 'panoramic expansive establishing view'
+  },
   lighting: {
     'natural-light': 'natural light', bright: 'bright lighting', 'soft-light': 'soft soft-lighting', sunset: 'warm sunset light',
     night: 'quiet night lighting', cinematic: 'cinematic lighting', dreamy: 'dreamy atmospheric light', dramatic: 'dramatic vivid lighting'
@@ -26,13 +29,30 @@ export const dictionary = {
   },
   negative: {
     text: 'text', logo: 'logo', watermark: 'watermark', 'extra-objects': 'extra objects', clutter: 'clutter', distortion: 'distortion'
-  }
+  },
+  textStyle: {
+    simple: 'simple readable typography', bold: 'bold strong typography', elegant: 'elegant refined typography', cute: 'cute friendly typography', handwritten: 'handwritten typography', retro: 'retro typography', pop: 'pop typography', futuristic: 'futuristic typography'
+  },
+  textLayout: {
+    'center-large': 'large centered text', 'top-title': 'top title text', 'bottom-title': 'bottom title text', 'left-aligned': 'left-aligned text', vertical: 'vertical text', diagonal: 'diagonal text', arch: 'arched text', dynamic: 'dynamic text layout'
+  },
+  textPosition: {
+    'top-left': 'top left', 'top-center': 'top center', 'top-right': 'top right', 'center-left': 'center left', center: 'center', 'center-right': 'center right', 'bottom-left': 'bottom left', 'bottom-center': 'bottom center', 'bottom-right': 'bottom right'
+  },
+  textSize: { small: 'small', medium: 'medium', large: 'large' }
 };
 
 export const sampleLabels = {
   style: { anime: 'アニメ風', illustration: 'イラスト風', realistic: 'リアル風', 'manga-lineart': 'マンガ風（線画）', watercolor: '水彩風', 'oil-painting': '油彩風', 'simple-flat': 'シンプル・フラット', 'pop-cute': 'ポップ・かわいい' },
   composition: { 'face-closeup': '顔アップ', 'bust-up': 'バストアップ', 'upper-body': '上半身', 'full-body': '全身', 'wide-shot': '引き', 'side-view': '横から', 'low-angle': 'ローアングル', 'high-angle': '俯瞰（上から）' },
   lighting: { 'natural-light': '自然光', bright: '明るい', 'soft-light': '柔らかい', sunset: '夕暮れ', night: '夜', cinematic: 'シネマティック', dreamy: '幻想的', dramatic: 'ドラマチック' }
+};
+
+export const textLabels = {
+  style: { simple: 'シンプル', bold: '力強い', elegant: '上品', cute: 'かわいい', handwritten: '手書き風', retro: 'レトロ', pop: 'ポップ', futuristic: '未来的' },
+  layout: { 'center-large': '中央に大きく', 'top-title': '上部タイトル', 'bottom-title': '下部タイトル', 'left-aligned': '左寄せ', vertical: '縦書き', diagonal: '斜め', arch: 'アーチ', dynamic: 'ダイナミック' },
+  position: { 'top-left': '左上', 'top-center': '上', 'top-right': '右上', 'center-left': '左', center: '中央', 'center-right': '右', 'bottom-left': '左下', 'bottom-center': '下', 'bottom-right': '右下' },
+  size: { small: '小さめ', medium: '標準', large: '大きめ' }
 };
 
 export const ids = {
@@ -42,3 +62,5 @@ export const ids = {
   adjustment: Object.keys(dictionary.adjustment),
   negative: Object.keys(dictionary.negative)
 };
+
+export const textIds = { style: Object.keys(dictionary.textStyle), layout: Object.keys(dictionary.textLayout), position: Object.keys(dictionary.textPosition), size: Object.keys(dictionary.textSize) };
